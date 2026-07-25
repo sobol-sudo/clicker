@@ -17,7 +17,7 @@ describe('ClickerService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('increment должен увеличивать кол-во монет', () => {
+  it('increment should increase the coin count', () => {
     let coins = 0;
     service.myCoins$.subscribe(val => coins = val)
 
@@ -25,7 +25,7 @@ describe('ClickerService', () => {
     expect(coins).toBeGreaterThan(0)
   })
 
-  it('buyStrongClick должен уменьшать монеты и увеличивать бонус, если хватает монет', () => {
+  it('buyStrongClick should deduct coins and increase the bonus when there are enough coins', () => {
     (service as any)._myCoins.next(100);
     const oldBonus = (service as any)._coinBonus.value;
 
@@ -35,7 +35,7 @@ describe('ClickerService', () => {
     expect((service as any)._coinBonus.value).toBeGreaterThan(oldBonus);
   })
 
-  it('buyAutoClick должен увеличивать авто-бонус', () => {
+  it('buyAutoClick should increase the auto bonus', () => {
     (service as any)._myCoins.next(100);
     const oldAutoBonus = (service as any)._autoBonus.value
 
@@ -45,7 +45,7 @@ describe('ClickerService', () => {
     expect((service as any)._autoBonus.value).toBeGreaterThan(oldAutoBonus)
   })
 
-  it('resetProgress должен обнулять прогресс и увеличивать ratioGame при положительном балансе', () => {
+  it('resetProgress should reset progress and increase ratioGame when the balance is sufficient', () => {
     (service as any)._myCoins.next(6000);
     (service as any)._resetGamePrice.next(5000);
     const oldRatio = (service as any)._ratioGame.value
@@ -56,7 +56,7 @@ describe('ClickerService', () => {
     expect((service as any)._ratioGame.value).toBeGreaterThan(oldRatio);
   })
 
-  it('resetProgress не должен обнулять прогресс и увеличивать ratioGame при недостаточном балансе', () => {
+  it('resetProgress should not reset progress or increase ratioGame when the balance is insufficient', () => {
     (service as any)._myCoins.next(4000);
     (service as any)._resetGamePrice.next(5000);
     const oldRatio = (service as any)._ratioGame.value
@@ -67,12 +67,12 @@ describe('ClickerService', () => {
     expect((service as any)._ratioGame.value).toBe(oldRatio)
   })
 
-  it('saveProgress должен вызывать setItem для localStorage', () => {
+  it('saveProgress should call setItem on localStorage', () => {
     service.saveProgress();
     expect(localStorage.setItem).toHaveBeenCalled();
   })
 
-  it('autoClick при вызове должен добавлять монеты', () => {
+  it('autoClick should add coins when called', () => {
     (service as any)._myCoins.next(0);
     (service as any)._autoBonus.next(2);
     (service as any)._ratioGame.next(2);
