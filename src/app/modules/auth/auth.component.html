@@ -33,14 +33,16 @@
       </ng-template>
 
       <div class="handle-form">
-        <span>{{ isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?" }}</span>
+        <span>{{
+          isRegister ? "Already have an account?" : "Don't have an account?"
+        }}</span>
         <a
           (click)="handleForm()"
           (keydown.enter)="handleForm()"
           (keydown.space)="handleForm()"
           tabindex="0"
         >
-          {{ isRegister ? "Войти" : "Зарегистрироваться" }}
+          {{ isRegister ? "Sign in" : "Sign up" }}
         </a>
       </div>
     </div>
