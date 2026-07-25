@@ -29,7 +29,7 @@ export class LoginComponent {
 
     this.apiService.loginUser(this.loginForm.value)
       .subscribe({
-        next: res => console.log('Успешная авторизация', res),
+        next: res => console.log('Login successful', res),
         error: err => {
           console.log(err)
           this.backendError = err.error.message
