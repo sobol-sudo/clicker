@@ -6,7 +6,20 @@ import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, AfterVie
   styleUrls: ['./button.component.scss']
 })
 export class ButtonComponent implements AfterViewInit {
+  /**
+   * Look only. It used to be written straight into the native `type`
+   * attribute, which produced `<button type="default">` — not a value the HTML
+   * spec knows, so every browser fell back to the submit state. The two
+   * form buttons in the app were therefore submitting by accident rather than
+   * by instruction, and correcting the attribute to `button` would have
+   * silently killed sign-in and sign-up. The variant now travels as a data
+   * attribute and the real type is stated separately.
+   */
   @Input() type: 'default' | 'danger' = 'default';
+
+  /** The actual HTML button type. Only a form's submit button needs 'submit'. */
+  @Input() nativeType: 'button' | 'submit' = 'button';
+
   @Input() disabled = false;
   @Output() btnClick = new EventEmitter<Event>();
 

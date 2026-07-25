@@ -23,4 +23,24 @@ describe('LoginComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  /**
+   * The button carries no click handler of its own — submitting the form is the
+   * whole mechanism. It used to render `type="default"`, which is not a value
+   * the HTML spec defines, so it only submitted because browsers fall back to
+   * the submit state on an unknown type. Correcting that attribute to `button`
+   * would have quietly turned sign-in into a control that does nothing.
+   */
+  it('submits the form from the rendered button', () => {
+    const submit = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      'form button'
+    )!;
+
+    expect(submit.type).toBe('submit');
+
+    const onSubmit = spyOn(component, 'onSubmit');
+    submit.click();
+
+    expect(onSubmit).toHaveBeenCalled();
+  });
 });

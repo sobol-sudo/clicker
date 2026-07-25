@@ -5,6 +5,12 @@ const angular = require("angular-eslint");
 
 module.exports = tseslint.config(
   {
+    // Generated output. Both are gitignored, but a flat config does not read
+    // .gitignore, so without this `ng test` writes coverage/ and the next lint
+    // run fails on the HTML report it just produced.
+    ignores: ["dist/", "coverage/"],
+  },
+  {
     files: ["**/*.ts"],
     extends: [
       eslint.configs.recommended,

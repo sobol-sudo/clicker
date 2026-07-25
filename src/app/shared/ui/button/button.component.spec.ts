@@ -42,6 +42,22 @@ describe('ButtonComponent', () => {
     expect(emissions).toBe(1);
   });
 
+  it('renders a real button type and keeps the variant out of it', () => {
+    // `type="default"` is not a value the HTML spec defines, so browsers fall
+    // back to the submit state. Writing the look into the type attribute is
+    // what made the sign-in and sign-up buttons submit by accident.
+    expect(native.getAttribute('type')).toBe('button');
+    expect(native.type).toBe('button');
+    expect(native.getAttribute('data-variant')).toBe('default');
+
+    component.nativeType = 'submit';
+    component.type = 'danger';
+    fixture.detectChanges();
+
+    expect(native.type).toBe('submit');
+    expect(native.getAttribute('data-variant')).toBe('danger');
+  });
+
   it('does not emit while disabled', () => {
     component.disabled = true;
     fixture.detectChanges();

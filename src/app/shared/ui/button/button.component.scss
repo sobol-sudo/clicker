@@ -16,7 +16,7 @@ button {
   width: 100%;
   transition: all 0.1s ease;
 
-  &[type="default"] {
+  &[data-variant="default"] {
     color: #000;
     background-color: #ffa733;
     border-color: #994c00;
@@ -29,7 +29,7 @@ button {
     }
   }
 
-  &[type="danger"] {
+  &[data-variant="danger"] {
     background-color: #ff4d4f;
     border-color: #800000;
     box-shadow: 0 4px 0 #660000, inset 0 0 0 2px #ff9999;
@@ -78,7 +78,7 @@ button:disabled:hover {
   box-shadow: 0 4px 0 #5e2b00, inset 0 0 0 2px #ffdd80;
 }
 
-button[type="danger"]:disabled:hover {
+button[data-variant="danger"]:disabled:hover {
   background-color: #ff4d4f;
   box-shadow: 0 4px 0 #660000, inset 0 0 0 2px #ff9999;
 }

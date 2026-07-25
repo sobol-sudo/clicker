@@ -22,7 +22,7 @@
       {{ backendError }}
     </div>
 
-    <app-button type="default" [disabled]="loading">
+    <app-button type="default" nativeType="submit" [disabled]="loading">
       {{ loading ? "Signing in..." : "Sign in" }}
     </app-button>
   </form>

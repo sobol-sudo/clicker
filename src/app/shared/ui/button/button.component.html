@@ -1,6 +1,7 @@
 <button
   #button
-  [attr.type]="type"
+  [type]="nativeType"
+  [attr.data-variant]="type"
   class="btn"
   [disabled]="disabled"
   (click)="onClick($event)"

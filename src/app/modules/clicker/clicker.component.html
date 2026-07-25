@@ -6,6 +6,7 @@
       type="button"
       class="clicker__wrapper-main-item"
       aria-label="Click the coin to earn coins"
+      [disabled]="(isCovered$ | async) === true"
       (click)="increment($event)"
     >
       <img

@@ -34,6 +34,20 @@ describe('RegisterComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  /** The button has no click handler; submitting the form is the wiring. */
+  it('submits the form from the rendered button', () => {
+    const submit = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      'form button'
+    )!;
+
+    expect(submit.type).toBe('submit');
+
+    component.registerForm.setValue({ username: 'ada', password: 'lovelace1' });
+    submit.click();
+
+    expect(TestBed.inject(AuthService).user?.username).toBe('ada');
+  });
+
   it('does not submit an invalid form', () => {
     let emitted = false;
     component.authenticated.subscribe(() => (emitted = true));

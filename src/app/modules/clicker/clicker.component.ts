@@ -1,6 +1,7 @@
 import { Component, ElementRef, inject, ViewChild, AfterViewInit } from '@angular/core';
 import { Subject, throttleTime, timer } from 'rxjs';
 import { ClickerService } from 'src/app/core/clicker/clicker.service';
+import { OverlayService } from 'src/app/core/ui/overlay.service';
 
 interface Popup {
   id: number;
@@ -22,6 +23,19 @@ interface PopupOrigin {
 })
 export class ClickerComponent implements AfterViewInit {
   clicker = inject(ClickerService)
+  private overlay = inject(OverlayService);
+
+  /**
+   * The store and the auth panel are full-screen, so while either is up their
+   * backdrop already swallows every pointer click aimed at the coin. The coin
+   * stayed focusable underneath it though, so Enter still paid out while a
+   * click on the very same control did nothing — the same control live one way
+   * and dead the other. Covering it disables it, which settles the two on the
+   * honest answer and takes it out of the tab order with every other control
+   * the panel hides.
+   */
+  isCovered$ = this.overlay.anyOpen$;
+
   popups: Popup[] = [];
 
   private click$ = new Subject<PopupOrigin>();

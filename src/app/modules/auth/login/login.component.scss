@@ -10,21 +10,6 @@ form {
   max-width: 450px;
   display: flex;
   flex-direction: column;
-
-  .submit-btn {
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    background: #007bff;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-    transition: 0.2s;
-
-    &:hover {
-      background: #0056b3;
-    }
-  }
 }
 .backend-error {
   color: #e74c3c;
