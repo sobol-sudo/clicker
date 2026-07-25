@@ -1,6 +1,13 @@
 import { discardPeriodicTasks, fakeAsync, TestBed } from '@angular/core/testing';
 import { ClickerService } from './clicker.service';
-import { coins, installFakeStorage, prestige, round2 } from 'src/app/testing/test-utils';
+import {
+  coins,
+  installFakeStorage,
+  prestige,
+  progressSnapshot,
+  round2,
+  setCoins
+} from 'src/app/testing/test-utils';
 
 describe('ClickerService', () => {
   let service: ClickerService;
@@ -202,6 +209,96 @@ describe('ClickerService prestige arithmetic', () => {
     const before = coins(service);
     service.autoClick();
     expect(round2(coins(service) - before)).toBe(1.15);
+
+    discardPeriodicTasks();
+  }));
+
+  /**
+   * The multiplier is banked into a rate once per upgrade, so the rate is a
+   * running sum: N upgrades after a prestige are worth N x the advertised
+   * amount, no more. Multiplying the rate by the multiplier instead of adding
+   * to it, or letting the multiplier itself grow per purchase, curves this
+   * ladder — and a single purchase is too short a run to show the curve.
+   */
+  it('pays the advertised amount once per upgrade, so three upgrades are worth three of them', fakeAsync(() => {
+    installFakeStorage();
+    const service = new ClickerService();
+
+    prestige(service);
+    const advertised = service.ratioGame$.value;
+    expect(advertised).toBe(1.15);
+
+    const clickRate: number[] = [];
+    const autoRate: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      setCoins(service, 1000);
+      service.buyStrongClick();
+      service.buyAutoClick();
+      clickRate.push(service.coinBonus$.value);
+      autoRate.push(service.autoBonus$.value);
+    }
+
+    // Starting from 1 coin per click and 0 per second, plus 1.15 each time.
+    expect(clickRate).toEqual([2.15, 3.3, 4.45]);
+    expect(autoRate).toEqual([1.15, 2.3, 3.45]);
+
+    // And the two earning paths pay the finished rates, not a recomputation.
+    setCoins(service, 0);
+    expect(service.increment()).toBe(4.45);
+    service.autoClick();
+    expect(coins(service)).toBe(round2(4.45 + 3.45));
+
+    discardPeriodicTasks();
+  }));
+});
+
+/**
+ * A prestige run is hours of play, and it only survives because saveProgress()
+ * and initSaveData() name the same seven keys. The specs above seed storage by
+ * hand, so they would all still pass if the save stopped writing one of them —
+ * the reload is the half nobody was watching.
+ */
+describe('ClickerService save round trip', () => {
+  it('reloads a prestiged save as the same game, paying the same amounts', fakeAsync(() => {
+    installFakeStorage();
+    const session = new ClickerService();
+
+    prestige(session);
+    prestige(session);
+    setCoins(session, 1000);
+    session.buyStrongClick();
+    session.buyAutoClick();
+    session.saveProgress();
+
+    const before = progressSnapshot(session);
+    expect(before).toEqual({
+      myCoins: 958,
+      coinBonus: 2.32,
+      autoBonus: 1.32,
+      priceStrongClick: 13,
+      priceAutoClick: 33,
+      ratioGame: 1.32,
+      resetGamePrice: 31250
+    });
+
+    // Same storage, a brand new service: exactly what reopening the tab does.
+    const reloaded = new ClickerService();
+
+    expect(progressSnapshot(reloaded)).toEqual(before);
+
+    // Dropping any one key from the save would silently hand back a starting
+    // value here, so assert on the payouts a player would notice: the rates
+    // they bought, and the multiplier the next upgrade is priced in.
+    expect(reloaded.increment()).toBe(2.32);
+
+    const balance = coins(reloaded);
+    reloaded.autoClick();
+    expect(round2(coins(reloaded) - balance)).toBe(1.32);
+
+    setCoins(reloaded, 1000);
+    const rateBeforeUpgrade = reloaded.coinBonus$.value;
+    reloaded.buyStrongClick();
+    expect(round2(reloaded.coinBonus$.value - rateBeforeUpgrade)).toBe(1.32);
 
     discardPeriodicTasks();
   }));

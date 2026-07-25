@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { ClickerService } from '../core/clicker/clicker.service';
 
 /**
@@ -38,11 +38,32 @@ export function setCoins(service: ClickerService, value: number): void {
   (service as unknown as { _myCoins: BehaviorSubject<number> })._myCoins.next(value);
 }
 
+/** Reads the current value off any of the service's streams. */
+export function latest<T>(source: Observable<T>): T {
+  let value!: T;
+  source.subscribe(current => (value = current)).unsubscribe();
+  return value;
+}
+
 /** Reads the current balance off the public stream. */
 export function coins(service: ClickerService): number {
-  let value = 0;
-  service.myCoins$.subscribe(current => (value = current)).unsubscribe();
-  return value;
+  return latest(service.myCoins$);
+}
+
+/**
+ * Every number the game persists, read back off the public streams. Specs use
+ * this to compare a session against the one that reloads from its save.
+ */
+export function progressSnapshot(service: ClickerService): Record<string, number> {
+  return {
+    myCoins: latest(service.myCoins$),
+    coinBonus: latest(service.coinBonus$),
+    autoBonus: latest(service.autoBonus$),
+    priceStrongClick: latest(service.priceStrongClick$),
+    priceAutoClick: latest(service.priceAutoClick$),
+    ratioGame: latest(service.ratioGame$),
+    resetGamePrice: latest(service.resetGamePrice$)
+  };
 }
 
 /** Buys one prestige at whatever it currently costs. */
