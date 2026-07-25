@@ -18,10 +18,12 @@
     ></app-form-input>
 
     <!-- Backend error -->
-    <div class="error backend-error" *ngIf="backendError">
+    <div class="error backend-error" role="alert" *ngIf="backendError">
       {{ backendError }}
     </div>
 
-    <app-button type="default">Sign up</app-button>
+    <app-button type="default" [disabled]="loading">
+      {{ loading ? "Signing up..." : "Sign up" }}
+    </app-button>
   </form>
 </div>

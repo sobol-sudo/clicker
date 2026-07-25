@@ -5,19 +5,36 @@
   flex-direction: column;
   gap: 10px;
 
-  &__icon {
+  &__icon-btn {
     position: fixed;
     right: 20px;
     top: 20px;
+    display: block;
+    padding: 0;
+    border: none;
+    background: none;
     cursor: pointer;
     user-select: none;
 
     opacity: 1;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+
+    &:focus-visible {
+      outline: 3px solid #ffffff;
+      outline-offset: 3px;
+    }
   }
 
-  &__icon.hidden {
+  // Hidden while the modal is open, and out of the tab order with it.
+  &__icon-btn.hidden {
     opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  &__icon {
+    display: block;
+    user-select: none;
   }
 
   app-button {
@@ -56,11 +73,14 @@
     -webkit-backdrop-filter: blur(5px);
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.2s ease-in-out;
+    // Keeps the closed store out of the tab order and the screen-reader tree.
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
   }
 
   &__modal.open {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
   }
 
@@ -70,6 +90,20 @@
     cursor: pointer;
     width: $store-header;
     height: $store-header;
+    padding: 0;
+    border: none;
+    background: none;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    &:focus-visible {
+      outline: 3px solid #ffffff;
+      outline-offset: -3px;
+    }
   }
 
   &__header {

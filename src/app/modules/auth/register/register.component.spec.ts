@@ -5,12 +5,20 @@ import { RegisterComponent } from './register.component';
 import { FormInputModule } from 'src/app/shared/ui/form-input/form-input.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'src/app/shared/ui/button/button.module';
+import { AuthService } from 'src/app/core/auth/auth.service';
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
 
+  const clearStorage = () => {
+    localStorage.removeItem('clicker.auth.users');
+    localStorage.removeItem('clicker.auth.session');
+  };
+
   beforeEach(() => {
+    clearStorage();
+
     TestBed.configureTestingModule({
       declarations: [RegisterComponent],
       imports: [FormInputModule, ReactiveFormsModule, ButtonModule, HttpClientTestingModule]
@@ -20,7 +28,45 @@ describe('RegisterComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(clearStorage);
+
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('does not submit an invalid form', () => {
+    let emitted = false;
+    component.authenticated.subscribe(() => (emitted = true));
+
+    component.registerForm.setValue({ username: 'ab', password: 'short' });
+    component.onSubmit();
+
+    expect(emitted).toBe(false);
+    expect(component.submitted).toBe(true);
+    expect(TestBed.inject(AuthService).user).toBeNull();
+  });
+
+  it('signs the user in and announces success', () => {
+    let emitted = false;
+    component.authenticated.subscribe(() => (emitted = true));
+
+    component.registerForm.setValue({ username: 'grace', password: 'hopper01' });
+    component.onSubmit();
+
+    expect(emitted).toBe(true);
+    expect(component.loading).toBe(false);
+    expect(component.backendError).toBeNull();
+    expect(TestBed.inject(AuthService).user?.username).toBe('grace');
+  });
+
+  it('shows a readable message when registration is rejected', () => {
+    component.registerForm.setValue({ username: 'grace', password: 'hopper01' });
+    component.onSubmit();
+
+    component.registerForm.setValue({ username: 'grace', password: 'hopper01' });
+    component.onSubmit();
+
+    expect(component.loading).toBe(false);
+    expect(component.backendError).toBe('That username is already taken.');
   });
 });

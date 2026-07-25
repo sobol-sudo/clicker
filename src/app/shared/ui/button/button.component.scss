@@ -52,8 +52,33 @@ button {
     -webkit-tap-highlight-color: transparent !important;
     outline: none !important;
   }
+
+  // Keyboard users need to see where they are; pointer users never see this.
+  &:focus-visible {
+    outline: 3px solid #fff !important;
+    outline-offset: 3px;
+  }
 }
 button.active {
   transform: translateY(3px);
   box-shadow: 0 1px 0 #000;
+}
+
+// Unaffordable purchases read as unavailable instead of silently doing nothing.
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  filter: grayscale(0.7);
+  transform: none;
+}
+
+button:disabled:hover {
+  filter: grayscale(0.7);
+  background-color: #ffa733;
+  box-shadow: 0 4px 0 #5e2b00, inset 0 0 0 2px #ffdd80;
+}
+
+button[type="danger"]:disabled:hover {
+  background-color: #ff4d4f;
+  box-shadow: 0 4px 0 #660000, inset 0 0 0 2px #ff9999;
 }

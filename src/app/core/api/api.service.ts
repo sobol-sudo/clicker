@@ -1,28 +1,25 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { AuthApiResponse, AuthCredentials } from '../auth/auth.models';
 
+/**
+ * Thin transport layer for the auth API. The access token is attached by
+ * AuthInterceptor, so nothing here builds headers by hand.
+ */
 @Injectable({
   providedIn: 'root'
 })
-
 export class ApiService {
   private baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token');
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    });
+  registerUser(body: AuthCredentials): Observable<AuthApiResponse> {
+    return this.http.post<AuthApiResponse>(`${this.baseUrl}/auth/register`, body);
   }
 
-  registerUser(body: { username: string; password: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/auth/register`, body, { headers: this.getHeaders() })
-  }
-  loginUser(body: { username: string; password: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/auth/login`, body, { headers: this.getHeaders() })
+  loginUser(body: AuthCredentials): Observable<AuthApiResponse> {
+    return this.http.post<AuthApiResponse>(`${this.baseUrl}/auth/login`, body);
   }
 }

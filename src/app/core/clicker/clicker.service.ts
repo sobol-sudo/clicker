@@ -1,17 +1,36 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, interval, } from 'rxjs';
 
+/**
+ * The only place a starting value is written down. Field initializers,
+ * initSaveData() and resetProgress() all read from here so the three can never
+ * drift apart again.
+ */
+const INITIAL = {
+  myCoins: 0,
+  coinBonus: 1,
+  autoBonus: 0,
+  priceStrongClick: 12,
+  priceAutoClick: 30,
+  ratioGame: 1,
+  resetGamePrice: 5000
+} as const;
+
+/** Auto-click income ticks once per second, which is what the UI claims. */
+const AUTO_CLICK_INTERVAL_MS = 1000;
+const AUTO_SAVE_INTERVAL_MS = 5000;
+
 @Injectable({
   providedIn: 'root'
 })
 export class ClickerService {
-  private _myCoins = new BehaviorSubject<number>(0);
-  private _coinBonus = new BehaviorSubject<number>(1);
-  private _autoBonus = new BehaviorSubject<number>(0)
-  private _priceStrongClick = new BehaviorSubject<number>(12);
-  private _priceAutoClick = new BehaviorSubject<number>(30)
-  private _ratioGame = new BehaviorSubject<number>(1)
-  private _resetGamePrice = new BehaviorSubject<number>(5000)
+  private _myCoins = new BehaviorSubject<number>(INITIAL.myCoins);
+  private _coinBonus = new BehaviorSubject<number>(INITIAL.coinBonus);
+  private _autoBonus = new BehaviorSubject<number>(INITIAL.autoBonus)
+  private _priceStrongClick = new BehaviorSubject<number>(INITIAL.priceStrongClick);
+  private _priceAutoClick = new BehaviorSubject<number>(INITIAL.priceAutoClick)
+  private _ratioGame = new BehaviorSubject<number>(INITIAL.ratioGame)
+  private _resetGamePrice = new BehaviorSubject<number>(INITIAL.resetGamePrice)
 
   myCoins$ = this._myCoins.asObservable();
   coinBonus$ = this._coinBonus;
@@ -25,7 +44,7 @@ export class ClickerService {
     this.startAutoSave()
     this.initSaveData()
 
-    interval(2000).subscribe(() => this.autoClick())
+    interval(AUTO_CLICK_INTERVAL_MS).subscribe(() => this.autoClick())
   }
 
   autoClick() {
@@ -37,17 +56,17 @@ export class ClickerService {
     const get = (key: string, fallback: number) =>
       +(localStorage.getItem(key) || fallback);
 
-    this._myCoins.next(get('myCoins', 0));
-    this._coinBonus.next(get('coinBonus', 1));
-    this._autoBonus.next(get('autoBonus', 0));
-    this._priceStrongClick.next(get('priceStrongClick', 12));
-    this._priceAutoClick.next(get('priceAutoClick', 30));
-    this._ratioGame.next(get('ratioGame', 1));
-    this._resetGamePrice.next(get('resetGamePrice', 5000))
+    this._myCoins.next(get('myCoins', INITIAL.myCoins));
+    this._coinBonus.next(get('coinBonus', INITIAL.coinBonus));
+    this._autoBonus.next(get('autoBonus', INITIAL.autoBonus));
+    this._priceStrongClick.next(get('priceStrongClick', INITIAL.priceStrongClick));
+    this._priceAutoClick.next(get('priceAutoClick', INITIAL.priceAutoClick));
+    this._ratioGame.next(get('ratioGame', INITIAL.ratioGame));
+    this._resetGamePrice.next(get('resetGamePrice', INITIAL.resetGamePrice))
   }
 
   private startAutoSave() {
-    interval(5000).subscribe(() => this.saveProgress())
+    interval(AUTO_SAVE_INTERVAL_MS).subscribe(() => this.saveProgress())
   }
 
   saveProgress() {
@@ -85,12 +104,13 @@ export class ClickerService {
 
   resetProgress() {
     if (this._resetGamePrice.value > this._myCoins.value) return
-    this._myCoins.next(0);
-    this._autoBonus.next(0);
-    this._coinBonus.next(1)
-    this._priceAutoClick.next(12);
-    this._priceStrongClick.next(30);
+    this._myCoins.next(INITIAL.myCoins);
+    this._autoBonus.next(INITIAL.autoBonus);
+    this._coinBonus.next(INITIAL.coinBonus)
+    this._priceStrongClick.next(INITIAL.priceStrongClick);
+    this._priceAutoClick.next(INITIAL.priceAutoClick);
 
+    // The prestige price and the multiplier are the two things that carry over.
     this._resetGamePrice.next(Math.floor(this._resetGamePrice.value * 2.5))
     this._ratioGame.next(Number((this._ratioGame.value * 1.15).toFixed(2)));
 

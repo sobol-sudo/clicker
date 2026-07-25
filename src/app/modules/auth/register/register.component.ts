@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from 'src/app/core/api/api.service';
+import { AuthService } from 'src/app/core/auth/auth.service';
+import { AuthCredentials, GENERIC_AUTH_ERROR } from 'src/app/core/auth/auth.models';
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -8,9 +10,13 @@ import { ApiService } from 'src/app/core/api/api.service';
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);
-  private apiService = inject(ApiService);
+  private auth = inject(AuthService);
+
+  @Output() authenticated = new EventEmitter<void>();
+
   registerForm: FormGroup;
   submitted = false;
+  loading = false;
   backendError: string | null = null;
 
   constructor() {
@@ -23,15 +29,21 @@ export class RegisterComponent {
   onSubmit() {
     this.backendError = null;
     this.submitted = true;
-    if (this.registerForm.invalid) return;
+    if (this.registerForm.invalid || this.loading) return;
 
-    this.apiService.registerUser(this.registerForm.value)
-      .subscribe({
-        next: res => console.log('Registration successful', res),
-        error: err => {
-          console.log(err)
-          this.backendError = err.error.message
-        }
-      });
+    this.loading = true;
+
+    this.auth.register(this.registerForm.getRawValue() as AuthCredentials).subscribe({
+      next: () => {
+        this.loading = false;
+        this.submitted = false;
+        this.registerForm.reset();
+        this.authenticated.emit();
+      },
+      error: (err: Error) => {
+        this.loading = false;
+        this.backendError = err?.message || GENERIC_AUTH_ERROR;
+      }
+    });
   }
 }

@@ -56,6 +56,29 @@ describe('ClickerService', () => {
     expect((service as any)._ratioGame.value).toBeGreaterThan(oldRatio);
   })
 
+  it('resetProgress should restore the shop to its starting prices, not swap them', () => {
+    const startingStrongClick = (service as any)._priceStrongClick.value;
+    const startingAutoClick = (service as any)._priceAutoClick.value;
+
+    // Move both prices off their starting values first, so the assertion below
+    // cannot pass by accident.
+    (service as any)._myCoins.next(1000);
+    service.buyStrongClick();
+    service.buyAutoClick();
+    expect((service as any)._priceStrongClick.value).not.toBe(startingStrongClick);
+    expect((service as any)._priceAutoClick.value).not.toBe(startingAutoClick);
+
+    (service as any)._myCoins.next(6000);
+    (service as any)._resetGamePrice.next(5000);
+
+    service.resetProgress();
+
+    expect((service as any)._priceStrongClick.value).toBe(startingStrongClick);
+    expect((service as any)._priceAutoClick.value).toBe(startingAutoClick);
+    expect((service as any)._coinBonus.value).toBe(1);
+    expect((service as any)._autoBonus.value).toBe(0);
+  })
+
   it('resetProgress should not reset progress or increase ratioGame when the balance is insufficient', () => {
     (service as any)._myCoins.next(4000);
     (service as any)._resetGamePrice.next(5000);

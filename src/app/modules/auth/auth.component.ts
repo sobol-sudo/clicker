@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AuthService } from 'src/app/core/auth/auth.service';
 
 @Component({
   selector: 'app-auth',
@@ -6,16 +7,28 @@ import { Component } from '@angular/core';
   styleUrls: ['./auth.component.scss']
 })
 export class AuthComponent {
+  private auth = inject(AuthService);
+
+  user$ = this.auth.user$;
+
   isOpenAuth = false;
   isRegister = true;
 
-  toggleAuth(event: Event) {
-    if (event instanceof KeyboardEvent) return;
-
-    this.isOpenAuth = !this.isOpenAuth
+  toggleAuth() {
+    this.isOpenAuth = !this.isOpenAuth;
   }
-  
-  handleForm(){
-    this.isRegister = !this.isRegister
+
+  handleForm() {
+    this.isRegister = !this.isRegister;
+  }
+
+  /** Sign-up and sign-in both land here: close the modal, show the account. */
+  onAuthenticated() {
+    this.isOpenAuth = false;
+    this.isRegister = true;
+  }
+
+  signOut() {
+    this.auth.logout();
   }
 }

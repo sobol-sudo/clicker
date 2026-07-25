@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from 'src/app/core/api/api.service';
+import { AuthService } from 'src/app/core/auth/auth.service';
+import { AuthCredentials, GENERIC_AUTH_ERROR } from 'src/app/core/auth/auth.models';
 
 @Component({
   selector: 'app-login',
@@ -9,10 +10,13 @@ import { ApiService } from 'src/app/core/api/api.service';
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
-  private apiService = inject(ApiService);
+  private auth = inject(AuthService);
+
+  @Output() authenticated = new EventEmitter<void>();
 
   loginForm: FormGroup;
   submitted = false;
+  loading = false;
   backendError: string | null = null;
 
   constructor() {
@@ -25,15 +29,21 @@ export class LoginComponent {
   onSubmit() {
     this.backendError = null;
     this.submitted = true;
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid || this.loading) return;
 
-    this.apiService.loginUser(this.loginForm.value)
-      .subscribe({
-        next: res => console.log('Login successful', res),
-        error: err => {
-          console.log(err)
-          this.backendError = err.error.message
-        }
-      });
+    this.loading = true;
+
+    this.auth.login(this.loginForm.getRawValue() as AuthCredentials).subscribe({
+      next: () => {
+        this.loading = false;
+        this.submitted = false;
+        this.loginForm.reset();
+        this.authenticated.emit();
+      },
+      error: (err: Error) => {
+        this.loading = false;
+        this.backendError = err?.message || GENERIC_AUTH_ERROR;
+      }
+    });
   }
 }

@@ -1,49 +1,60 @@
 <div class="auth">
-  <img
-    class="auth__icon"
-    src="assets/svg/sign-in.svg"
-    alt=""
-    [width]="50"
-    [height]="50"
-    tabindex="0"
-    (click)="toggleAuth($event)"
-    (keydown.enter)="toggleAuth($event)"
-    (keydown.space)="toggleAuth($event)"
-  />
+  <div class="auth__account" *ngIf="user$ | async as user; else signedOut">
+    <span class="auth__username">{{ user.username }}</span>
+    <button type="button" class="auth__signout" (click)="signOut()">
+      Sign out
+    </button>
+  </div>
+
+  <ng-template #signedOut>
+    <button
+      type="button"
+      class="auth__icon-btn"
+      [class.hidden]="isOpenAuth"
+      [attr.aria-expanded]="isOpenAuth"
+      aria-label="Sign in"
+      (click)="toggleAuth()"
+    >
+      <img
+        class="auth__icon"
+        src="assets/svg/sign-in.svg"
+        alt=""
+        [width]="50"
+        [height]="50"
+        draggable="false"
+      />
+    </button>
+  </ng-template>
 
   <div class="auth__modal" [class.open]="isOpenAuth">
     <div class="auth__header">
-      <img
+      <button
+        type="button"
         class="auth__icon-close"
-        src="assets/svg/cross.svg"
-        alt="Close"
-        draggable="false"
-        tabindex="0"
-        (click)="toggleAuth($event)"
-        (keydown.enter)="toggleAuth($event)"
-        (keydown.space)="toggleAuth($event)"
-      />
+        aria-label="Close"
+        (click)="toggleAuth()"
+      >
+        <img src="assets/svg/cross.svg" alt="" draggable="false" />
+      </button>
     </div>
 
     <div class="auth__main">
-      <app-register *ngIf="isRegister; else isLogin"></app-register>
+      <app-register
+        *ngIf="isRegister; else isLogin"
+        (authenticated)="onAuthenticated()"
+      ></app-register>
 
       <ng-template #isLogin>
-        <app-login></app-login>
+        <app-login (authenticated)="onAuthenticated()"></app-login>
       </ng-template>
 
       <div class="handle-form">
         <span>{{
           isRegister ? "Already have an account?" : "Don't have an account?"
         }}</span>
-        <a
-          (click)="handleForm()"
-          (keydown.enter)="handleForm()"
-          (keydown.space)="handleForm()"
-          tabindex="0"
-        >
+        <button type="button" class="handle-form__switch" (click)="handleForm()">
           {{ isRegister ? "Sign in" : "Sign up" }}
-        </a>
+        </button>
       </div>
     </div>
   </div>

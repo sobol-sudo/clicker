@@ -24,13 +24,23 @@
   &__wrapper {
     position: relative;
     display: inline-block;
-    cursor: pointer;
-    outline: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 
+    // A real <button> so Enter/Space work; styled to keep the bare coin look.
     &-main-item {
+      display: block;
       padding: 30px;
+      border: none;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+
+      &:focus-visible {
+        outline: 3px solid #ffffff;
+        outline-offset: -10px;
+      }
     }
   }
 

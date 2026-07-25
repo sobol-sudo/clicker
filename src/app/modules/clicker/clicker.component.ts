@@ -9,6 +9,12 @@ interface Popup {
   y: number;
 }
 
+/** Where the "+n" popup should appear, relative to the coin. */
+interface PopupOrigin {
+  x: number;
+  y: number;
+}
+
 @Component({
   selector: 'app-clicker',
   templateUrl: './clicker.component.html',
@@ -18,28 +24,28 @@ export class ClickerComponent implements AfterViewInit {
   clicker = inject(ClickerService)
   popups: Popup[] = [];
 
-  private click$ = new Subject<MouseEvent>();
+  private click$ = new Subject<PopupOrigin>();
 
   constructor() {
     this.click$
       .pipe(throttleTime(50))
-      .subscribe((event) => this.handleIncrement(event))
+      .subscribe((origin) => this.handleIncrement(origin))
   }
 
   increment(event: Event) {
-    if (event instanceof KeyboardEvent) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
 
-    if (event instanceof MouseEvent) {
-      this.click$.next(event);
-    }
+    // A pointer click carries coordinates; Enter/Space on the button produces a
+    // click with detail 0 and no position, so anchor the popup to the centre.
+    const pointer = event instanceof MouseEvent && event.detail > 0 ? event : null;
+    const clientX = pointer ? pointer.clientX : rect.left + rect.width / 2;
+    const clientY = pointer ? pointer.clientY : rect.top + rect.height / 2;
+
+    this.click$.next({ x: clientX - rect.left - 10, y: clientY - rect.top - 20 });
   }
 
-  private handleIncrement(event: MouseEvent) {
+  private handleIncrement({ x, y }: PopupOrigin) {
     this.clicker.increment()
-
-    const target = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = event.clientX - target.left - 10;
-    const y = event.clientY - target.top - 20;
 
     const coinBonus = parseFloat((this.clicker.coinBonus$.value * this.clicker.ratioGame$.value).toFixed(2))
 
@@ -56,7 +62,7 @@ export class ClickerComponent implements AfterViewInit {
     });
   }
 
-  @ViewChild('clickItem', { static: true }) clickItem!: ElementRef<HTMLButtonElement>;
+  @ViewChild('clickItem', { static: true }) clickItem!: ElementRef<HTMLImageElement>;
 
   ngAfterViewInit() {
     const clickItem = this.clickItem.nativeElement;
@@ -65,15 +71,10 @@ export class ClickerComponent implements AfterViewInit {
     const removeActive = () => clickItem.classList.remove('active');
 
     clickItem.addEventListener('touchstart', addActive);
-    clickItem.addEventListener('touchend', () => {
-      removeActive();
-    });
+    clickItem.addEventListener('touchend', removeActive);
 
     clickItem.addEventListener('mousedown', addActive);
-    clickItem.addEventListener('mouseup', () => {
-      setTimeout(() => removeActive(), 100);
-      removeActive();
-    });
+    clickItem.addEventListener('mouseup', () => setTimeout(removeActive, 100));
 
     clickItem.addEventListener('mouseleave', removeActive);
   }

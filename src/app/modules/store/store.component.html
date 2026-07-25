@@ -1,17 +1,21 @@
 <div class="store">
-  <img
+  <button
+    type="button"
+    class="store__icon-btn"
     [class.hidden]="isOpenStore"
-    class="store__icon"
-    src="assets/svg/basket.svg"
-    alt="Store"
-    [width]="50"
-    [height]="50"
-    draggable="false"
-    tabindex="0"
-    (click)="toggleStore($event)"
-    (keydown.enter)="toggleStore($event)"
-    (keydown.space)="toggleStore($event)"
-  />
+    [attr.aria-expanded]="isOpenStore"
+    aria-label="Open store"
+    (click)="toggleStore()"
+  >
+    <img
+      class="store__icon"
+      src="assets/svg/basket.svg"
+      alt=""
+      [width]="50"
+      [height]="50"
+      draggable="false"
+    />
+  </button>
   <div class="store__modal" [class.open]="isOpenStore">
     <div class="store__header">
       <div class="store__balance">
@@ -19,21 +23,22 @@
         <strong>{{ clicker.myCoins$ | async | number: "1.0-2" }}</strong>
         <img src="assets/svg/coin.svg" alt="coin" [width]="32" [height]="32" />
       </div>
-      <img
+      <button
+        type="button"
         class="store__icon-close"
-        src="assets/svg/cross.svg"
-        alt="Close"
-        draggable="false"
-        tabindex="0"
-        (click)="toggleStore($event)"
-        (keydown.enter)="toggleStore($event)"
-        (keydown.space)="toggleStore($event)"
-      />
+        aria-label="Close store"
+        (click)="toggleStore()"
+      >
+        <img src="assets/svg/cross.svg" alt="" draggable="false" />
+      </button>
     </div>
     <div class="store__content">
-      <app-button (btnClick)="buyStrongClick()">
+      <app-button
+        [disabled]="(canBuyStrongClick$ | async) === false"
+        (btnClick)="buyStrongClick()"
+      >
         <span class="btn-content">
-          Strong click + {{ 1 }}
+          Strong click + {{ clicker.ratioGame$ | async }}
           <div class="price">
             {{ clicker.priceStrongClick$ | async }}
             <img src="assets/svg/coin.svg" alt="" [width]="12" [height]="12" />
@@ -41,9 +46,12 @@
         </span>
       </app-button>
 
-      <app-button (btnClick)="buyAutoClick()">
+      <app-button
+        [disabled]="(canBuyAutoClick$ | async) === false"
+        (btnClick)="buyAutoClick()"
+      >
         <span class="btn-content">
-          Auto click + {{ 1 }}
+          Auto click + {{ clicker.ratioGame$ | async }}
           <div class="price">
             {{ clicker.priceAutoClick$ | async }}
             <img src="assets/svg/coin.svg" alt="" [width]="12" [height]="12" />
@@ -54,6 +62,7 @@
       <app-button
         [type]="'danger'"
         class="progress-reset"
+        [disabled]="(canResetProgress$ | async) === false"
         (btnClick)="resetProgress()"
       >
         <span class="btn-content" style="justify-content: center">

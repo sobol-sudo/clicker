@@ -1,24 +1,23 @@
 <div class="clicker">
   <h3>My coins: {{ clicker.myCoins$ | async }}</h3>
 
-  <div
-    class="clicker__wrapper"
-    tabindex="0"
-    (click)="increment($event)"
-    (keydown.enter)="increment($event)"
-    (keydown.space)="increment($event)"
-  >
-    <div class="clicker__wrapper-main-item">
+  <div class="clicker__wrapper">
+    <button
+      type="button"
+      class="clicker__wrapper-main-item"
+      aria-label="Click the coin to earn coins"
+      (click)="increment($event)"
+    >
       <img
         #clickItem
         class="clicker__main-item"
         src="assets/svg/coin.svg"
-        alt="coin"
+        alt=""
         width="200"
         height="200"
         draggable="false"
       />
-    </div>
+    </button>
 
     <div
       *ngFor="let popup of popups"
@@ -30,6 +29,6 @@
   </div>
 
   <div class="clicker__auto-click">
-    <span> clicks per second: {{ clicker.autoBonus$.getValue() }} </span>
+    <span> clicks per second: {{ clicker.autoBonus$ | async }} </span>
   </div>
 </div>
