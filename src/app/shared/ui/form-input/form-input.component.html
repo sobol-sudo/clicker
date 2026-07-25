@@ -8,9 +8,10 @@
   />
 </label>
 <div class="form-error" *ngIf="submitted && formControl.invalid">
-  <small *ngIf="formControl.errors?.['required']">{{ label }} обязателен</small>
+  <small *ngIf="formControl.errors?.['required']">{{ label }} is required</small>
   <small *ngIf="formControl.errors?.['minlength']">
-    Минимум {{ formControl.errors?.["minlength"].requiredLength }} символов
+    Must be at least {{ formControl.errors?.["minlength"].requiredLength }}
+    characters
   </small>
-  <small *ngIf="formControl.errors?.['email']">Некорректный email</small>
+  <small *ngIf="formControl.errors?.['email']">Invalid email address</small>
 </div>
