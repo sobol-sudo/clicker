@@ -1,5 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import { discardPeriodicTasks, fakeAsync, TestBed } from '@angular/core/testing';
 import { ClickerService } from './clicker.service';
+import { coins, installFakeStorage, prestige, round2 } from 'src/app/testing/test-utils';
 
 describe('ClickerService', () => {
   let service: ClickerService;
@@ -134,4 +135,74 @@ describe('ClickerService', () => {
 
     expect((service as any)._myCoins.value).toBe(2)
   })
+});
+
+/**
+ * The prestige multiplier is the one number in the game that compounds, carries
+ * across a wipe and gets written into the save. Each spec below builds its own
+ * service inside fakeAsync so the two background intervals are fake timers that
+ * discardPeriodicTasks() disposes of — no spec leaves a clock running or a key
+ * in the browser's real localStorage.
+ */
+describe('ClickerService prestige arithmetic', () => {
+  it('compounds the prestige multiplier on every wipe instead of adding a flat step', fakeAsync(() => {
+    installFakeStorage();
+    const service = new ClickerService();
+
+    const advertised: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      prestige(service);
+      advertised.push(service.ratioGame$.value);
+    }
+
+    // A flat "+0.15" step is indistinguishable from x1.15 after a single
+    // prestige — both land on 1.15 — which is why this walks three of them.
+    expect(advertised).toEqual([1.15, 1.32, 1.52]);
+
+    discardPeriodicTasks();
+  }));
+
+  it('compounds the prestige price and never wipes it along with the progress it buys', fakeAsync(() => {
+    installFakeStorage();
+    const service = new ClickerService();
+
+    const prices = [service.resetGamePrice$.value];
+    for (let i = 0; i < 2; i++) {
+      prestige(service);
+      prices.push(service.resetGamePrice$.value);
+    }
+
+    // The price and the multiplier are the only two things that survive a wipe.
+    // Resetting either one to its starting value makes prestige free forever.
+    expect(prices).toEqual([5000, 12500, 31250]);
+    expect(service.ratioGame$.value).toBe(1.32);
+
+    discardPeriodicTasks();
+  }));
+
+  it('loads a save as finished rates rather than raw upgrade counts', fakeAsync(() => {
+    // Exactly what saveProgress() writes after one prestige and one of each
+    // upgrade. The multiplier is already banked into the two rates, so they
+    // have to be credited verbatim — reading them as counts and multiplying at
+    // earn time would silently inflate every save already in the wild.
+    installFakeStorage({
+      myCoins: '100',
+      coinBonus: '2.15',
+      autoBonus: '1.15',
+      priceStrongClick: '13',
+      priceAutoClick: '33',
+      ratioGame: '1.15',
+      resetGamePrice: '12500'
+    });
+
+    const service = new ClickerService();
+
+    expect(service.increment()).toBe(2.15);
+
+    const before = coins(service);
+    service.autoClick();
+    expect(round2(coins(service) - before)).toBe(1.15);
+
+    discardPeriodicTasks();
+  }));
 });

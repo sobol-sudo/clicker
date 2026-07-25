@@ -5,7 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "prepare": "husky install",
-    "test": "ng test",
+    "test": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:watch": "ng test",
     "test:precommit": "ng test --watch=false --browsers=ChromeHeadless",
     "build": "ng build",
     "watch": "ng build --watch --configuration development"
