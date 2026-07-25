@@ -1,27 +1,27 @@
 <div class="register">
-  <h2 class="register__title">Регистрация</h2>
+  <h2 class="register__title">Sign up</h2>
 
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
     <app-form-input
-      [label]="'Имя'"
+      [label]="'Username'"
       [control]="registerForm.controls['username']"
-      [placeholder]="'Введите имя'"
+      [placeholder]="'Enter your username'"
       [submitted]="submitted"
     ></app-form-input>
 
     <app-form-input
-      [label]="'Пароль'"
+      [label]="'Password'"
       [control]="registerForm.controls['password']"
       [type]="'password'"
-      [placeholder]="'Введите пароль'"
+      [placeholder]="'Enter your password'"
       [submitted]="submitted"
     ></app-form-input>
 
-    <!-- Ошибка с бэка -->
+    <!-- Backend error -->
     <div class="error backend-error" *ngIf="backendError">
       {{ backendError }}
     </div>
 
-    <app-button type="default">Зарегистрироваться</app-button>
+    <app-button type="default">Sign up</app-button>
   </form>
 </div>
