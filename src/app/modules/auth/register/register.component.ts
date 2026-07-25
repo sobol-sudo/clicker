@@ -27,7 +27,7 @@ export class RegisterComponent {
 
     this.apiService.registerUser(this.registerForm.value)
       .subscribe({
-        next: res => console.log('Успешная регистрация', res),
+        next: res => console.log('Registration successful', res),
         error: err => {
           console.log(err)
           this.backendError = err.error.message
