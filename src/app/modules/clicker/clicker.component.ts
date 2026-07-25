@@ -45,13 +45,13 @@ export class ClickerComponent implements AfterViewInit {
   }
 
   private handleIncrement({ x, y }: PopupOrigin) {
-    this.clicker.increment()
-
-    const coinBonus = parseFloat((this.clicker.coinBonus$.value * this.clicker.ratioGame$.value).toFixed(2))
+    // Quote the figure the service actually banked instead of recomputing it,
+    // so the popup cannot drift away from the balance again.
+    const credited = this.clicker.increment()
 
     const newPopup: Popup = {
       id: Date.now(),
-      value: coinBonus,
+      value: credited,
       x,
       y
     }

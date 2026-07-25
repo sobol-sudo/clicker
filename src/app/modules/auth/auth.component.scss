@@ -42,6 +42,17 @@
     display: flex;
     align-items: center;
     gap: 10px;
+
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  }
+
+  // An open panel covers this corner, so the account goes with it rather than
+  // sitting on the backdrop with a Sign out button that cannot be clicked.
+  &__account.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   &__username {

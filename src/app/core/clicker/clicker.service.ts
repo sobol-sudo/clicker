@@ -20,6 +20,21 @@ const INITIAL = {
 const AUTO_CLICK_INTERVAL_MS = 1000;
 const AUTO_SAVE_INTERVAL_MS = 5000;
 
+/**
+ * How the prestige multiplier is allowed to be applied — read this before
+ * touching any of the arithmetic below.
+ *
+ * `ratioGame` is banked into a rate EXACTLY ONCE, at the moment an upgrade is
+ * bought. That leaves the two rates meaning precisely what the UI prints:
+ *
+ *   coinBonus -> coins credited per manual click
+ *   autoBonus -> coins credited per second
+ *
+ * So the earning paths (increment / autoClick) must add the rate verbatim and
+ * must NOT multiply by `ratioGame` again. Applying it a second time is the
+ * defect that made the store advertise "+1.15" while actually paying +1.3225.
+ */
+
 @Injectable({
   providedIn: 'root'
 })
@@ -47,8 +62,9 @@ export class ClickerService {
     interval(AUTO_CLICK_INTERVAL_MS).subscribe(() => this.autoClick())
   }
 
+  /** `autoBonus` is already the per-second rate; crediting it is the whole job. */
   autoClick() {
-    const autoIncome = this._autoBonus.value * this._ratioGame.value;
+    const autoIncome = this._autoBonus.value;
     this._myCoins.next((parseFloat((this._myCoins.value + autoIncome).toFixed(2))))
   }
 
@@ -79,17 +95,27 @@ export class ClickerService {
     localStorage.setItem('resetGamePrice', this._resetGamePrice.value.toString());
   }
 
-  increment() {
-    const incrementValue = this._coinBonus.value * this._ratioGame.value;
+  /**
+   * Credits one manual click and returns the amount actually banked, so the
+   * floating "+n" popup can quote the credit itself rather than recomputing it
+   * and drifting away from it.
+   */
+  increment(): number {
+    const incrementValue = this._coinBonus.value;
     const newTotal = this._myCoins.value + incrementValue;
+    const rounded = parseFloat(newTotal.toFixed(2));
+    const credited = parseFloat((rounded - this._myCoins.value).toFixed(2));
 
-    this._myCoins.next(parseFloat(newTotal.toFixed(2)));
+    this._myCoins.next(rounded);
+
+    return credited;
   }
 
   buyStrongClick() {
     if (this._myCoins.value >= this._priceStrongClick.value) {
       this._myCoins.next(parseFloat((this._myCoins.value - this._priceStrongClick.value).toFixed(2)));
-      this._coinBonus.next(parseFloat((this._coinBonus.value + 1 * this._ratioGame.value).toFixed(2)));
+      // The one and only place the prestige multiplier enters the click rate.
+      this._coinBonus.next(parseFloat((this._coinBonus.value + this._ratioGame.value).toFixed(2)));
       this._priceStrongClick.next(Math.floor(this._priceStrongClick.value * 1.15));
     }
   }
@@ -97,7 +123,8 @@ export class ClickerService {
   buyAutoClick() {
     if (this._myCoins.value >= this._priceAutoClick.value) {
       this._myCoins.next(parseFloat((this._myCoins.value - this._priceAutoClick.value).toFixed(2)));
-      this._autoBonus.next(parseFloat((this._autoBonus.value + 1 * this._ratioGame.value).toFixed(2)));
+      // The one and only place the prestige multiplier enters the per-second rate.
+      this._autoBonus.next(parseFloat((this._autoBonus.value + this._ratioGame.value).toFixed(2)));
       this._priceAutoClick.next(Math.floor(this._priceAutoClick.value * 1.1));
     }
   }

@@ -2,8 +2,8 @@
   <button
     type="button"
     class="store__icon-btn"
-    [class.hidden]="isOpenStore"
-    [attr.aria-expanded]="isOpenStore"
+    [class.hidden]="isLauncherHidden$ | async"
+    [attr.aria-expanded]="(isOpenStore$ | async) === true"
     aria-label="Open store"
     (click)="toggleStore()"
   >
@@ -16,7 +16,7 @@
       draggable="false"
     />
   </button>
-  <div class="store__modal" [class.open]="isOpenStore">
+  <div class="store__modal" [class.open]="isOpenStore$ | async">
     <div class="store__header">
       <div class="store__balance">
         <span>Balance:</span>

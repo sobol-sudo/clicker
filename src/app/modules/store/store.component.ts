@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { combineLatest, map, Observable } from 'rxjs';
 import { ClickerService } from 'src/app/core/clicker/clicker.service';
+import { OverlayService } from 'src/app/core/ui/overlay.service';
 
 @Component({
   selector: 'app-store',
@@ -8,8 +9,16 @@ import { ClickerService } from 'src/app/core/clicker/clicker.service';
   styleUrls: ['./store.component.scss']
 })
 export class StoreComponent {
-  isOpenStore = false;
+  private overlay = inject(OverlayService);
   clicker = inject(ClickerService)
+
+  isOpenStore$ = this.overlay.isOpen$('store');
+
+  /**
+   * The basket hides behind any open panel, not just its own — otherwise it
+   * sits on top of the auth backdrop looking clickable and doing nothing.
+   */
+  isLauncherHidden$ = this.overlay.anyOpen$;
 
   /** Drives the disabled state so an unaffordable purchase never looks live. */
   canBuyStrongClick$ = this.canAfford(this.clicker.priceStrongClick$);
@@ -28,7 +37,7 @@ export class StoreComponent {
   }
 
   toggleStore() {
-    this.isOpenStore = !this.isOpenStore
+    this.overlay.toggle('store')
   }
 
   private canAfford(price$: Observable<number>): Observable<boolean> {

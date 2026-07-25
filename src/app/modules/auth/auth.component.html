@@ -1,5 +1,9 @@
 <div class="auth">
-  <div class="auth__account" *ngIf="user$ | async as user; else signedOut">
+  <div
+    class="auth__account"
+    [class.hidden]="isLauncherHidden$ | async"
+    *ngIf="user$ | async as user; else signedOut"
+  >
     <span class="auth__username">{{ user.username }}</span>
     <button type="button" class="auth__signout" (click)="signOut()">
       Sign out
@@ -10,8 +14,8 @@
     <button
       type="button"
       class="auth__icon-btn"
-      [class.hidden]="isOpenAuth"
-      [attr.aria-expanded]="isOpenAuth"
+      [class.hidden]="isLauncherHidden$ | async"
+      [attr.aria-expanded]="(isOpenAuth$ | async) === true"
       aria-label="Sign in"
       (click)="toggleAuth()"
     >
@@ -26,7 +30,7 @@
     </button>
   </ng-template>
 
-  <div class="auth__modal" [class.open]="isOpenAuth">
+  <div class="auth__modal" [class.open]="isOpenAuth$ | async">
     <div class="auth__header">
       <button
         type="button"
